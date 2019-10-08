@@ -70,7 +70,7 @@ ifeq ($(cross_target),msvc)
 	common_flags := /EHc /EHs /fp:precise /Gy /MD /MP /nologo /sdl /utf-8 /Y-
 	diagnostic_flags := /W4 /WX
 	cc_specific_flags :=
-	cxx_specific_flags := /permissive- /std:c++latest
+	cxx_specific_flags := /permissive- /std:c++17
 	cc_defines := /D_CRT_SECURE_NO_WARNINGS=1 /DNDEBUG=1 /DNOMINMAX=1 /DUNICODE=1 /D_UNICODE=1 /DWINVER=0x601 /D_WIN32_WINNT=0x601
 	opt_release := /O2
 	opt_test := /Od
@@ -93,7 +93,7 @@ endif
 
 ifeq ($(cross_target),cygwin)
 	cc_defines += -D_REENTRANT=1 -D_XOPEN_SOURCE=700
-	cxx_specific_flags += -std=gnu++2a
+	cxx_specific_flags += -std=c++17
 	ld_specific_flags += -Wl,--enable-auto-import
 endif
 
@@ -101,13 +101,13 @@ ifeq ($(cross_target),darwin)
 	LIBTAG := apple
 	CXX := clang++
 	cc_defines += -D_DARWIN_C_SOURCE=1 -D_REENTRANT=1 -D_XOPEN_SOURCE=700
-	cxx_specific_flags += -std=c++2a -stdlib=libc++
+	cxx_specific_flags += -std=c++17 -stdlib=libc++
 	ld_specific_flags += -framework Cocoa
 endif
 
 ifeq ($(cross_target),linux)
 	cc_defines += -D_REENTRANT=1 -D_XOPEN_SOURCE=700
-	cxx_specific_flags += -std=gnu++2a
+	cxx_specific_flags += -std=c++17
 endif
 
 ifneq ($(shell grep -Fo sdl $(dependency_file)),)
