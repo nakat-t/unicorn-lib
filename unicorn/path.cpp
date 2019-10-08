@@ -1112,8 +1112,6 @@ namespace RS::Unicorn {
         flag_type flags = 0;
         #ifdef _XOPEN_SOURCE
             DIR* dirptr = nullptr;
-            dirent entry;
-            char padding[NAME_MAX + 1];
             ~impl_type() { if (dirptr) closedir(dirptr); }
         #else
             HANDLE handle = nullptr;
@@ -1128,8 +1126,6 @@ namespace RS::Unicorn {
             return;
         #ifdef _XOPEN_SOURCE
             impl = std::make_shared<impl_type>();
-            memset(&impl->entry, 0, sizeof(impl->entry));
-            memset(impl->padding, 0, sizeof(impl->padding));
             if (dir.empty())
                 impl->dirptr = opendir(".");
             else
@@ -1169,11 +1165,10 @@ namespace RS::Unicorn {
         const bool skip_hidden = impl->flags & no_hidden;
         while (impl) {
             #ifdef _XOPEN_SOURCE
-                dirent* entptr = nullptr;
-                int rc = readdir_r(impl->dirptr, &impl->entry, &entptr);
-                bool ok = rc == 0 && entptr;
+                dirent* entptr = readdir(impl->dirptr);
+                bool ok = entptr;
                 if (ok)
-                    impl->leaf = impl->entry.d_name;
+                    impl->leaf = entptr->d_name;
             #else
                 bool ok = impl->first || FindNextFile(impl->handle, &impl->info);
                 impl->first = false;
