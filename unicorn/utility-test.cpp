@@ -10,7 +10,6 @@
 #include <istream>
 #include <map>
 #include <memory>
-#include <optional>
 #include <ostream>
 #include <set>
 #include <sstream>
@@ -1669,8 +1668,8 @@ void test_unicorn_utility_conversion_to_string() {
     std::runtime_error ex("Runtime error");
     std::array<uint8_t, 4> ba = {0x12,0x34,0x56,0x78};
     std::vector<uint8_t> bv = {0x9a,0xbc,0xde,0xf0};
-    std::optional<int> o1;
-    std::optional<int> o2 = 42;
+    RS::optional<int> o1;
+    RS::optional<int> o2 = 42;
     std::shared_ptr<int> sp1;
     std::shared_ptr<int> sp2 = std::make_shared<int>(42);
     std::unique_ptr<int> up1;

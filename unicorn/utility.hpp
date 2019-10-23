@@ -56,7 +56,6 @@
 #include <limits>
 #include <mutex>
 #include <new>
-#include <optional>
 #include <ostream>
 #include <shared_mutex>
 #include <sstream>
@@ -69,6 +68,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include "nonstd/optional.hpp"
 #include "nonstd/string_view.hpp"
 
 #ifdef __GNUC__
@@ -252,6 +252,8 @@ namespace RS {
     using Strings = std::vector<std::string>;
     using NativeString = std::basic_string<NativeCharacter>;
     using WstringEquivalent = std::basic_string<WcharEquivalent>;
+
+    using nonstd::optional;
 
     template <auto> class IncompleteTemplate;
     class IncompleteType;
@@ -1367,7 +1369,7 @@ namespace RS {
         template <size_t N> struct IsByteArray<std::array<unsigned char, N>>: public std::true_type {};
 
         template <typename T> struct IsOptional: public std::false_type {};
-        template <typename T> struct IsOptional<std::optional<T>>: public std::true_type {};
+        template <typename T> struct IsOptional<RS::optional<T>>: public std::true_type {};
 
         template <typename T> struct IsSharedPtr: public std::false_type {};
         template <typename T> struct IsSharedPtr<std::shared_ptr<T>>: public std::true_type {};

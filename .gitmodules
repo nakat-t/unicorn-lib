@@ -1,3 +1,6 @@
 [submodule "external/martinmoene/string-view-lite"]
 	path = external/martinmoene/string-view-lite
 	url = https://github.com/martinmoene/string-view-lite.git
+[submodule "external/martinmoene/optional-lite"]
+	path = external/martinmoene/optional-lite
+	url = https://github.com/martinmoene/optional-lite.git

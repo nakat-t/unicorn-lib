@@ -46,7 +46,7 @@ cc_defines := -DNDEBUG=1
 opt_release := -O2
 opt_test := -O1
 cc_output := -o #
-external_includes := external/martinmoene/string-view-lite/include
+external_includes := external/martinmoene/string-view-lite/include external/martinmoene/optional-lite/include
 include_path := -I. $(addprefix -I,$(external_includes))
 AR := ar
 ar_specific_flags := -rsu
