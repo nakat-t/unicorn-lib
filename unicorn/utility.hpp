@@ -1414,15 +1414,19 @@ namespace RS {
         template <typename T> struct IsTuple: public std::false_type {};
         template <typename... TS> struct IsTuple<std::tuple<TS...>>: public std::true_type {};
 
+        template <size_t I, size_t N, typename std::enable_if<(I + 1 == N), std::nullptr_t>::type = nullptr, typename... TS>
+        inline void append_tuple_helper(const std::tuple<TS...>& t, std::string& s) {
+            s += to_str(std::get<I>(t));
+        }
+        template <size_t I, size_t N, typename std::enable_if<(I + 1 < N), std::nullptr_t>::type = nullptr, typename... TS>
+        inline void append_tuple_helper(const std::tuple<TS...>& t, std::string& s) {
+            s += to_str(std::get<I>(t));
+            s += ',';
+            append_tuple_helper<I + 1, N>(t, s);
+        }
         template <size_t I, typename... TS>
         void append_tuple(const std::tuple<TS...>& t, std::string& s) {
-            if constexpr (I < sizeof...(TS)) {
-                s += to_str(std::get<I>(t));
-                if constexpr (I + 1 < sizeof...(TS)) {
-                    s += ',';
-                    append_tuple<I + 1>(t, s);
-                }
-            }
+            append_tuple_helper<I, sizeof...(TS)>(t, s);
         }
 
     }
