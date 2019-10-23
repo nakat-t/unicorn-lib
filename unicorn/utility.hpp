@@ -1478,14 +1478,14 @@ namespace RS {
                 return true;
             } else if constexpr (Meta::is_detected<StrToEnumArchetype, T>) {
                 return str_to_enum(view, t);
-            } else if constexpr (std::is_constructible_v<T, RS::string_view>) {
+            } else if constexpr (std::is_constructible<T, RS::string_view>::value) {
                 t = static_cast<T>(view);
                 return true;
-            } else if constexpr (std::is_constructible_v<T, std::string>) {
+            } else if constexpr (std::is_constructible<T, std::string>::value) {
                 std::string str(view);
                 t = static_cast<T>(str);
                 return true;
-            } else if constexpr (std::is_constructible_v<T, const char*>) {
+            } else if constexpr (std::is_constructible<T, const char*>::value) {
                 std::string str(view);
                 t = static_cast<T>(str.data());
                 return true;
@@ -1552,11 +1552,11 @@ namespace RS {
             return to_string(t);
         } else if constexpr (Meta::is_detected_convertible<std::string, StdToStringArchetype, T>) {
             return std::to_string(t);
-        } else if constexpr (std::is_constructible_v<std::string, T>) {
+        } else if constexpr (std::is_constructible<std::string, T>::value) {
             return static_cast<std::string>(t);
-        } else if constexpr (std::is_constructible_v<RS::string_view, T>) {
+        } else if constexpr (std::is_constructible<RS::string_view, T>::value) {
             return std::string(static_cast<RS::string_view>(t));
-        } else if constexpr (std::is_constructible_v<const char*, T>) {
+        } else if constexpr (std::is_constructible<const char*, T>::value) {
             return cstr(static_cast<const char*>(t));
         } else if constexpr (std::is_base_of_v<std::exception, T>) {
             return t.what();
