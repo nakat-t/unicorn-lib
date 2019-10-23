@@ -1198,7 +1198,7 @@ namespace RS {
 
     template <typename T>
     Ustring opt_fp_format(T t, char mode = 'g', int prec = 6) {
-        if constexpr (std::is_floating_point_v<T>) {
+        if constexpr (std::is_floating_point<T>::value) {
             return fp_format(t, mode, prec);
         } else {
             (void)mode;
@@ -1454,7 +1454,7 @@ namespace RS {
                 char* stop = nullptr;
                 T rc = T();
                 errno = 0;
-                if constexpr (std::is_floating_point_v<T>) {
+                if constexpr (std::is_floating_point<T>::value) {
                     if constexpr (sizeof(T) <= sizeof(float))
                         rc = T(std::strtof(begin, &stop));
                     else if constexpr (sizeof(T) <= sizeof(double))
@@ -1544,7 +1544,7 @@ namespace RS {
             return s;
         } else if constexpr (std::is_integral_v<T>) {
             return std::to_string(t);
-        } else if constexpr (std::is_floating_point_v<T>) {
+        } else if constexpr (std::is_floating_point<T>::value) {
             return fp_format(t);
         } else if constexpr (Meta::is_detected_convertible<std::string, StrMethodArchetype, T>) {
             return t.str();
