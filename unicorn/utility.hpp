@@ -544,13 +544,13 @@ namespace RS {
 
     }
 
-    template <typename Container, typename T>
+    template <typename Container, typename T, typename std::enable_if<Meta::IsDetected<RS_Detail::HasPushBackArchetype, Container, T>::value, nullptr_t>::type = nullptr>
     void append_to(Container& con, const T& t) {
-        static constexpr bool has_push_back = Meta::is_detected<RS_Detail::HasPushBackArchetype, Container, T>;
-        if constexpr (has_push_back)
-            con.push_back(t);
-        else
-            con.insert(con.end(), t);
+        con.push_back(t);
+    }
+    template <typename Container, typename T, typename std::enable_if<!Meta::IsDetected<RS_Detail::HasPushBackArchetype, Container, T>::value, nullptr_t>::type = nullptr>
+    void append_to(Container& con, const T& t) {
+        con.insert(con.end(), t);
     }
 
     template <typename Container>
