@@ -1580,7 +1580,9 @@ namespace RS {
         } else if constexpr (Meta::is_range<T>) {
             if constexpr (IsPair<Meta::RangeValue<T>>::value) {
                 std::string s = "{";
-                for (auto& [k,v]: t) {
+                for (auto& pair: t) {
+                    auto& k = pair.first;
+                    auto& v = pair.second;
                     s += to_str(k);
                     s += ':';
                     s += to_str(v);
