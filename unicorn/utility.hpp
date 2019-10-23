@@ -1429,7 +1429,7 @@ namespace RS {
                 t = T();
                 return true;
             }
-            if constexpr (std::is_same_v<T, bool>) {
+            if constexpr (std::is_same<T, bool>::value) {
                 if (view == "true") {
                     t = true;
                     return true;
@@ -1519,15 +1519,15 @@ namespace RS {
     std::string to_str(const T& t) {
         using namespace RS_Detail;
         using namespace RS::Literals;
-        if constexpr (std::is_same_v<T, bool>) {
+        if constexpr (std::is_same<T, bool>::value) {
             return t ? "true"s : "false"s;
-        } else if constexpr (std::is_same_v<T, char>) {
+        } else if constexpr (std::is_same<T, char>::value) {
             return std::string(1, t);
-        } else if constexpr (std::is_same_v<T, std::string>) {
+        } else if constexpr (std::is_same<T, std::string>::value) {
             return t;
-        } else if constexpr (std::is_same_v<T, RS::string_view>) {
+        } else if constexpr (std::is_same<T, RS::string_view>::value) {
             return std::string(t);
-        } else if constexpr (std::is_same_v<T, char*> || std::is_same_v<T, const char*>) {
+        } else if constexpr (std::is_same<T, char*>::value || std::is_same<T, const char*>::value) {
             return cstr(t);
         } else if constexpr (IsByteArray<T>::value) {
             static constexpr const char* digits = "0123456789abcdef";
