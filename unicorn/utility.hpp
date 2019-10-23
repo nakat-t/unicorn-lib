@@ -255,9 +255,13 @@ namespace RS {
 
     using nonstd::optional;
 
+#if __cplusplus >= 201703L
     template <auto> class IncompleteTemplate;
+#endif
     class IncompleteType;
+#if __cplusplus >= 201703L
     template <auto> class CompleteTemplate { RS_NO_INSTANCE(CompleteTemplate); };
+#endif
     class CompleteType { RS_NO_INSTANCE(CompleteType); };
 
     namespace Literals {
