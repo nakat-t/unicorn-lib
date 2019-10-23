@@ -7,7 +7,6 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 
 namespace RS::Unicorn {
 
@@ -25,9 +24,9 @@ namespace RS::Unicorn {
         using split_range = Irange<split_iterator>;
 
         struct partition_type {
-            std::string_view left;
-            std::string_view mid;
-            std::string_view right;
+            RS::string_view left;
+            RS::string_view mid;
+            RS::string_view right;
         };
 
         static constexpr flag_type ascii              = setbit<0>;     // [C--] ASCII character properties           ~PCRE2_UCP
@@ -56,29 +55,29 @@ namespace RS::Unicorn {
         static constexpr flag_type runtime_sentinel_  = partial_soft;
 
         Regex() = default;
-        explicit Regex(std::string_view pattern, flag_type flags = 0);
+        explicit Regex(RS::string_view pattern, flag_type flags = 0);
         std::string pattern() const { return re_pattern; }
         flag_type flags() const noexcept { return re_flags; }
         bool empty() const noexcept { return re_pattern.empty(); }
         bool is_null() const noexcept { return ! pc_code; }
         size_t groups() const noexcept;
-        size_t named(std::string_view name) const;
-        match search(std::string_view str, size_t pos = 0, flag_type flags = 0) const;
+        size_t named(RS::string_view name) const;
+        match search(RS::string_view str, size_t pos = 0, flag_type flags = 0) const;
         match search(const Utf8Iterator& start, flag_type flags = 0) const;
-        match operator()(std::string_view str, size_t pos = 0, flag_type flags = 0) const;
+        match operator()(RS::string_view str, size_t pos = 0, flag_type flags = 0) const;
         match operator()(const Utf8Iterator& start, flag_type flags = 0) const;
-        size_t count(std::string_view str, size_t pos = 0, flag_type flags = 0) const;
+        size_t count(RS::string_view str, size_t pos = 0, flag_type flags = 0) const;
         size_t count(const Utf8Iterator& start, flag_type flags = 0) const;
-        match_range grep(std::string_view str, size_t pos = 0, flag_type flags = 0) const;
+        match_range grep(RS::string_view str, size_t pos = 0, flag_type flags = 0) const;
         match_range grep(const Utf8Iterator& start, flag_type flags = 0) const;
-        partition_type partition(std::string_view str, size_t pos = 0, flag_type flags = 0) const;
-        std::string replace(std::string_view str, std::string_view fmt, size_t pos = 0, flag_type flags = 0) const;
-        void replace_in(std::string& str, std::string_view fmt, size_t pos = 0, flag_type flags = 0) const;
-        split_range split(std::string_view str, size_t pos = 0, flag_type flags = 0) const;
+        partition_type partition(RS::string_view str, size_t pos = 0, flag_type flags = 0) const;
+        std::string replace(RS::string_view str, RS::string_view fmt, size_t pos = 0, flag_type flags = 0) const;
+        void replace_in(std::string& str, RS::string_view fmt, size_t pos = 0, flag_type flags = 0) const;
+        split_range split(RS::string_view str, size_t pos = 0, flag_type flags = 0) const;
         static Version compile_version() noexcept;
         static Version runtime_version() noexcept;
         static Version unicode_version() noexcept;
-        static std::string escape(std::string_view str);
+        static std::string escape(RS::string_view str);
         friend std::ostream& operator<<(std::ostream& out, const Regex& re) { return out << re.pattern(); }
         friend std::string to_str(const Regex& re) { return re.pattern(); }
 
@@ -89,7 +88,7 @@ namespace RS::Unicorn {
         std::string re_pattern;
         flag_type re_flags = 0;
 
-        void do_replace(std::string_view src, std::string& dst, std::string_view fmt, size_t pos, flag_type flags) const;
+        void do_replace(RS::string_view src, std::string& dst, RS::string_view fmt, size_t pos, flag_type flags) const;
 
     };
 
@@ -115,34 +114,34 @@ namespace RS::Unicorn {
         size_t offset(size_t i = 0) const noexcept;
         size_t endpos(size_t i = 0) const noexcept;
         size_t count(size_t i = 0) const noexcept;
-        std::string_view str(size_t i = 0) const noexcept;
-        std::string_view operator[](size_t i) const noexcept { return str(i); }
+        RS::string_view str(size_t i = 0) const noexcept;
+        RS::string_view operator[](size_t i) const noexcept { return str(i); }
         size_t first() const noexcept;
         size_t last() const noexcept;
-        std::string_view mark() const noexcept;
-        operator std::string_view() const noexcept { return str(); }
-        bool matched(std::string_view name) const { return matched(index_by_name(name)); }
-        const char* begin(std::string_view name) const { return begin(index_by_name(name)); }
-        const char* end(std::string_view name) const { return end(index_by_name(name)); }
-        size_t offset(std::string_view name) const { return offset(index_by_name(name)); }
-        size_t endpos(std::string_view name) const { return endpos(index_by_name(name)); }
-        size_t count(std::string_view name) const { return count(index_by_name(name)); }
-        std::string_view str(std::string_view name) const { return str(index_by_name(name)); }
-        std::string_view operator[](std::string_view name) const { return str(name); }
+        RS::string_view mark() const noexcept;
+        operator RS::string_view() const noexcept { return str(); }
+        bool matched(RS::string_view name) const { return matched(index_by_name(name)); }
+        const char* begin(RS::string_view name) const { return begin(index_by_name(name)); }
+        const char* end(RS::string_view name) const { return end(index_by_name(name)); }
+        size_t offset(RS::string_view name) const { return offset(index_by_name(name)); }
+        size_t endpos(RS::string_view name) const { return endpos(index_by_name(name)); }
+        size_t count(RS::string_view name) const { return count(index_by_name(name)); }
+        RS::string_view str(RS::string_view name) const { return str(index_by_name(name)); }
+        RS::string_view operator[](RS::string_view name) const { return str(name); }
     private:
         friend class Regex;
         friend class Regex::match_iterator;
         friend class Regex::split_iterator;
         std::shared_ptr<void> match_data; // pcre2_match_data
-        std::string_view subject_view;
+        RS::string_view subject_view;
         const Regex* regex_ptr = nullptr;
         flag_type match_flags = 0;
         uint32_t match_options = 0;
         int match_result = -1; // PCRE2_ERROR_NOMATCH
         size_t offset_count = 0;
         size_t* offset_vector = nullptr;
-        match(const Regex& re, std::string_view str, flag_type flags);
-        size_t index_by_name(std::string_view name) const;
+        match(const Regex& re, RS::string_view str, flag_type flags);
+        size_t index_by_name(RS::string_view name) const;
         void next() { next(endpos()); }
         void next(size_t pos);
     };
@@ -157,35 +156,35 @@ namespace RS::Unicorn {
     private:
         friend class Regex;
         match current;
-        match_iterator(const Regex& re, std::string_view str, size_t pos, flag_type flags): current(re, str, flags) { current.next(pos); }
+        match_iterator(const Regex& re, RS::string_view str, size_t pos, flag_type flags): current(re, str, flags) { current.next(pos); }
     };
 
     class Regex::split_iterator:
-    public ForwardIterator<split_iterator, const std::string_view> {
+    public ForwardIterator<split_iterator, const RS::string_view> {
     public:
         split_iterator() = default;
-        const std::string_view& operator*() const noexcept { return span; }
+        const RS::string_view& operator*() const noexcept { return span; }
         split_iterator& operator++();
         bool operator==(const split_iterator& rhs) const noexcept { return span.data() == rhs.span.data(); }
     private:
         friend class Regex;
         Regex::match after;
         const char* end = nullptr;
-        std::string_view span;
-        split_iterator(const Regex& re, std::string_view str, size_t pos, flag_type flags);
+        RS::string_view span;
+        split_iterator(const Regex& re, RS::string_view str, size_t pos, flag_type flags);
     };
 
     class Regex::transform {
     public:
         transform() = default;
-        explicit transform(const Regex& pattern, std::string_view fmt, flag_type flags = 0);
-        explicit transform(std::string_view pattern, std::string_view fmt, flag_type flags = 0);
+        explicit transform(const Regex& pattern, RS::string_view fmt, flag_type flags = 0);
+        explicit transform(RS::string_view pattern, RS::string_view fmt, flag_type flags = 0);
         std::string pattern() const { return re.pattern(); }
         std::string format() const { return sub_format; }
         flag_type flags() const noexcept { return re.flags() | sub_flags; }
-        std::string replace(std::string_view str, size_t pos = 0, flag_type flags = 0) const;
+        std::string replace(RS::string_view str, size_t pos = 0, flag_type flags = 0) const;
         void replace_in(std::string& str, size_t pos = 0, flag_type flags = 0) const;
-        std::string operator()(std::string_view str, size_t pos = 0, flag_type flags = 0) const { return replace(str, pos, flags); }
+        std::string operator()(RS::string_view str, size_t pos = 0, flag_type flags = 0) const { return replace(str, pos, flags); }
     private:
         Regex re;
         std::string sub_format;

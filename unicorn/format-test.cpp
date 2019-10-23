@@ -9,7 +9,7 @@ using namespace RS;
 using namespace RS::Unicorn;
 using namespace RS::Unicorn::Literals;
 using namespace std::chrono;
-using namespace std::literals;
+using namespace RS::Literals;
 
 void test_unicorn_format_booleans() {
 
@@ -498,14 +498,14 @@ void test_unicorn_format_strings() {
     TEST_EQUAL(format_str(U"§€ αβγ\n"s, "v"), "00a7 20ac 0020 03b1 03b2 03b3 000a");
     TEST_EQUAL(format_str(U"§€ αβγ\n"s, "x"), "a7 20ac 20 3b1 3b2 3b3 a");
 
-    TEST_EQUAL(format_str("Hello"sv), "Hello");
-    TEST_EQUAL(format_str("αβγδε"sv), "αβγδε");
-    TEST_EQUAL(format_str(u"Hello"sv), "Hello");
-    TEST_EQUAL(format_str(u"αβγδε"sv), "αβγδε");
-    TEST_EQUAL(format_str(U"Hello"sv), "Hello");
-    TEST_EQUAL(format_str(U"αβγδε"sv), "αβγδε");
-    TEST_EQUAL(format_str(L"Hello"sv), "Hello");
-    TEST_EQUAL(format_str(L"αβγδε"sv), "αβγδε");
+    TEST_EQUAL(format_str("Hello"_sv), "Hello");
+    TEST_EQUAL(format_str("αβγδε"_sv), "αβγδε");
+    TEST_EQUAL(format_str(u"Hello"_sv), "Hello");
+    TEST_EQUAL(format_str(u"αβγδε"_sv), "αβγδε");
+    TEST_EQUAL(format_str(U"Hello"_sv), "Hello");
+    TEST_EQUAL(format_str(U"αβγδε"_sv), "αβγδε");
+    TEST_EQUAL(format_str(L"Hello"_sv), "Hello");
+    TEST_EQUAL(format_str(L"αβγδε"_sv), "αβγδε");
 
 }
 

@@ -17,7 +17,7 @@
     #include <windows.h>
 #endif
 
-using namespace std::literals;
+using namespace RS::Literals;
 
 namespace RS::Unicorn {
 
@@ -197,7 +197,7 @@ namespace RS::Unicorn {
                 current.erase(0, 2);
             match = match_codepage(current);
             if (match)
-                current = match[1];
+                current = Ustring{match[1]};
             const CharsetInfo* csp = nullptr;
             if (match || match_integer(current)) {
                 // Name is an integer, presumably a code page

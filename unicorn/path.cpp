@@ -34,7 +34,7 @@
 #endif
 
 using namespace std::chrono;
-using namespace std::literals;
+using namespace RS::Literals;
 
 namespace RS::Unicorn {
 
@@ -857,7 +857,7 @@ namespace RS::Unicorn {
         }
     }
 
-    void Path::save(std::string_view src, flag_type flags) const {
+    void Path::save(RS::string_view src, flag_type flags) const {
         FILE* out = nullptr;
         auto guard = scope_exit([&] { if (out && out != stdout) fclose(out); });
         if ((flags & std_default) && (filename.empty() || filename == CX("-"))) {

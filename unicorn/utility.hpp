@@ -62,7 +62,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <system_error>
 #include <tuple>
 #include <typeindex>
@@ -70,6 +69,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include "nonstd/string_view.hpp"
 
 #ifdef __GNUC__
     #include <cxxabi.h>
@@ -135,7 +135,7 @@
                 v.push_back(EnumType(i)); \
             return v; \
         } \
-        inline RS_ATTR_UNUSED bool str_to_enum(std::string_view s, EnumType& t) noexcept { \
+        inline RS_ATTR_UNUSED bool str_to_enum(RS::string_view s, EnumType& t) noexcept { \
             return ::RS::RS_Detail::enum_from_str(s, t, EnumType::RS_##EnumType##_begin_, #EnumType "::", #first_name "," #__VA_ARGS__); \
         } \
         inline RS_ATTR_UNUSED std::string to_str(EnumType t) { \
@@ -241,8 +241,14 @@ namespace RS {
         using WcharEquivalent = char32_t;
     #endif
 
+    using nonstd::string_view;
+    using nonstd::wstring_view;
+    using nonstd::u16string_view;
+    using nonstd::u32string_view;
+    using nonstd::basic_string_view;
+
     using Ustring = std::string;
-    using Uview = std::string_view;
+    using Uview = string_view;
     using Strings = std::vector<std::string>;
     using NativeString = std::basic_string<NativeCharacter>;
     using WstringEquivalent = std::basic_string<WcharEquivalent>;
@@ -251,6 +257,11 @@ namespace RS {
     class IncompleteType;
     template <auto> class CompleteTemplate { RS_NO_INSTANCE(CompleteTemplate); };
     class CompleteType { RS_NO_INSTANCE(CompleteType); };
+
+    namespace Literals {
+        using namespace std::literals;
+        using namespace nonstd::literals;
+    }
 
     // Constants
 
@@ -281,8 +292,8 @@ namespace RS {
 
     // Forward declarations
 
-    template <typename T> bool from_str(std::string_view view, T& t) noexcept;
-    template <typename T> T from_str(std::string_view view);
+    template <typename T> bool from_str(RS::string_view view, T& t) noexcept;
+    template <typename T> T from_str(RS::string_view view);
     template <typename T> std::string to_str(const T& t);
 
     // Enumeration macro implementation
@@ -310,11 +321,11 @@ namespace RS {
         }
 
         template <typename EnumType>
-        bool enum_from_str(std::string_view s, EnumType& t, EnumType begin, const char* prefix, const char* names) {
+        bool enum_from_str(RS::string_view s, EnumType& t, EnumType begin, const char* prefix, const char* names) {
             using U = std::underlying_type_t<EnumType>;
             size_t psize = std::strlen(prefix);
             if (psize < s.size() && std::memcmp(s.data(), prefix, psize) == 0)
-                s = std::string_view(s.data() + psize, s.size() - psize);
+                s = RS::string_view(s.data() + psize, s.size() - psize);
             auto& names_vec = enum_str_list<EnumType>(names);
             for (auto& name: names_vec) {
                 if (s == name) {
@@ -344,7 +355,7 @@ namespace RS {
 
     // Error handling
 
-    inline void runtime_assert(bool condition, std::string_view message) noexcept {
+    inline void runtime_assert(bool condition, RS::string_view message) noexcept {
         if (! condition) {
             std::fwrite(message.data(), 1, message.size(), stderr);
             std::fputc('\n', stderr);
@@ -693,6 +704,13 @@ namespace RS {
     template <typename T> Ustring dec(T x, size_t digits = 1) { return RS_Detail::int_to_string(x, 10, digits); }
     template <typename T> Ustring hex(T x, size_t digits = 2 * sizeof(T)) { return RS_Detail::int_to_string(x, 16, digits); }
 
+#if defined(nssv_USES_STD_STRING_VIEW) && !nssv_USES_STD_STRING_VIEW
+    inline std::string& operator+=(std::string& s, const nonstd::string_view& view) {
+        s.append(view.data(), view.size());
+        return s;
+    }
+#endif
+
     // Date and time functions
 
     constexpr uint32_t utc_zone = 1;
@@ -741,7 +759,7 @@ namespace RS {
     }
 
     inline Ustring format_date(std::chrono::system_clock::time_point tp, int prec = 0, uint32_t flags = utc_zone) {
-        using namespace std::literals;
+        using namespace RS::Literals;
         uint32_t zone = flags & (utc_zone | local_zone);
         if (popcount(zone) > 1 || flags - zone)
             throw std::invalid_argument("Invalid date flags: 0x" + hex(flags, 1));
@@ -965,19 +983,19 @@ namespace RS {
     constexpr char ascii_toupper(char c) noexcept { return ascii_islower(c) ? char(c - 32) : c; }
     constexpr bool is_ascii(char c) noexcept { return uint8_t(c) <= 127; }
 
-    inline std::string ascii_lowercase(std::string_view s) {
+    inline std::string ascii_lowercase(RS::string_view s) {
         Ustring r(s);
         std::transform(r.begin(), r.end(), r.begin(), ascii_tolower);
         return r;
     }
 
-    inline std::string ascii_uppercase(std::string_view s) {
+    inline std::string ascii_uppercase(RS::string_view s) {
         Ustring r(s);
         std::transform(r.begin(), r.end(), r.begin(), ascii_toupper);
         return r;
     }
 
-    inline std::string ascii_titlecase(std::string_view s) {
+    inline std::string ascii_titlecase(RS::string_view s) {
         Ustring r(s);
         bool was_alpha = false;
         for (char& c: r) {
@@ -990,7 +1008,7 @@ namespace RS {
         return r;
     }
 
-    inline std::string ascii_sentencecase(std::string_view s) {
+    inline std::string ascii_sentencecase(RS::string_view s) {
         Ustring r(s);
         bool new_sentence = true, was_break = false;
         for (char& c: r) {
@@ -1011,22 +1029,22 @@ namespace RS {
         return r;
     }
 
-    inline unsigned long long binnum(std::string_view str) noexcept {
+    inline unsigned long long binnum(RS::string_view str) noexcept {
         std::string s(str);
         return std::strtoull(s.data(), nullptr, 2);
     }
 
-    inline long long decnum(std::string_view str) noexcept {
+    inline long long decnum(RS::string_view str) noexcept {
         std::string s(str);
         return std::strtoll(s.data(), nullptr, 10);
     }
 
-    inline unsigned long long hexnum(std::string_view str) noexcept {
+    inline unsigned long long hexnum(RS::string_view str) noexcept {
         std::string s(str);
         return std::strtoull(s.data(), nullptr, 16);
     }
 
-    inline double fpnum(std::string_view str) noexcept {
+    inline double fpnum(RS::string_view str) noexcept {
         std::string s(str);
         return std::strtod(s.data(), nullptr);
     }
@@ -1063,7 +1081,7 @@ namespace RS {
 
     namespace {
 
-        inline std::string quote_string(std::string_view str, bool escape_8bit) {
+        inline std::string quote_string(RS::string_view str, bool escape_8bit) {
             std::string result = "\"";
             for (auto c: str) {
                 auto b = uint8_t(c);
@@ -1089,17 +1107,17 @@ namespace RS {
 
     }
 
-    inline std::string quote(std::string_view str) {
+    inline std::string quote(RS::string_view str) {
         return quote_string(str, false);
     }
 
-    inline Ustring bquote(std::string_view str) {
+    inline Ustring bquote(RS::string_view str) {
         return quote_string(str, true);
     }
 
     template <typename T>
     Ustring fp_format(T t, char mode = 'g', int prec = 6) {
-        using namespace std::literals;
+        using namespace RS::Literals;
         static const Ustring modes = "EeFfGgZz";
         if (modes.find(mode) == npos)
             throw std::invalid_argument("Invalid floating point mode: " + quote(Ustring(1, mode)));
@@ -1166,7 +1184,7 @@ namespace RS {
     template <typename S>
     auto make_view(const S& s, size_t pos = 0, size_t len = npos) noexcept {
         using C = std::decay_t<decltype(s[0])>;
-        using SV = std::basic_string_view<C>;
+        using SV = RS::basic_string_view<C>;
         SV view(s);
         if (pos == 0 && len == npos)
             return view;
@@ -1260,7 +1278,7 @@ namespace RS {
     }
 
     template <typename Range>
-    Ustring format_list(const Range& r, std::string_view prefix, std::string_view delimiter, std::string_view suffix) {
+    Ustring format_list(const Range& r, RS::string_view prefix, RS::string_view delimiter, RS::string_view suffix) {
         Ustring s(prefix);
         for (auto&& t: r) {
             s += to_str(t);
@@ -1279,7 +1297,7 @@ namespace RS {
     }
 
     template <typename Range>
-    Ustring format_map(const Range& r, std::string_view prefix, std::string_view infix, std::string_view delimiter, std::string_view suffix) {
+    Ustring format_map(const Range& r, RS::string_view prefix, RS::string_view infix, RS::string_view delimiter, RS::string_view suffix) {
         Ustring s(prefix);
         for (auto&& kv: r) {
             s += to_str(kv.first);
@@ -1342,7 +1360,7 @@ namespace RS {
         template <typename T> using StrMethodArchetype = decltype(std::declval<T>().str());
         template <typename T> using AdlToStringArchetype = decltype(to_string(std::declval<T>()));
         template <typename T> using StdToStringArchetype = decltype(std::to_string(std::declval<T>()));
-        template <typename T> using StrToEnumArchetype = decltype(str_to_enum(std::string_view(), std::declval<T&>()));
+        template <typename T> using StrToEnumArchetype = decltype(str_to_enum(RS::string_view(), std::declval<T&>()));
 
         template <typename T> struct IsByteArray: public std::false_type {};
         template <typename A> struct IsByteArray<std::vector<unsigned char, A>>: public std::true_type {};
@@ -1377,7 +1395,7 @@ namespace RS {
     }
 
     template <typename T>
-    bool from_str(std::string_view view, T& t) noexcept {
+    bool from_str(RS::string_view view, T& t) noexcept {
         using namespace RS_Detail;
         try {
             if (view.empty()) {
@@ -1433,7 +1451,7 @@ namespace RS {
                 return true;
             } else if constexpr (Meta::is_detected<StrToEnumArchetype, T>) {
                 return str_to_enum(view, t);
-            } else if constexpr (std::is_constructible_v<T, std::string_view>) {
+            } else if constexpr (std::is_constructible_v<T, RS::string_view>) {
                 t = static_cast<T>(view);
                 return true;
             } else if constexpr (std::is_constructible_v<T, std::string>) {
@@ -1463,7 +1481,7 @@ namespace RS {
     }
 
     template <typename T>
-    T from_str(std::string_view view) {
+    T from_str(RS::string_view view) {
         T t;
         if (! from_str(view, t))
             throw std::invalid_argument("Invalid conversion: " + quote(view) + " => " + type_name<T>());
@@ -1473,14 +1491,14 @@ namespace RS {
     template <typename T>
     std::string to_str(const T& t) {
         using namespace RS_Detail;
-        using namespace std::literals;
+        using namespace RS::Literals;
         if constexpr (std::is_same_v<T, bool>) {
             return t ? "true"s : "false"s;
         } else if constexpr (std::is_same_v<T, char>) {
             return std::string(1, t);
         } else if constexpr (std::is_same_v<T, std::string>) {
             return t;
-        } else if constexpr (std::is_same_v<T, std::string_view>) {
+        } else if constexpr (std::is_same_v<T, RS::string_view>) {
             return std::string(t);
         } else if constexpr (std::is_same_v<T, char*> || std::is_same_v<T, const char*>) {
             return cstr(t);
@@ -1509,8 +1527,8 @@ namespace RS {
             return std::to_string(t);
         } else if constexpr (std::is_constructible_v<std::string, T>) {
             return static_cast<std::string>(t);
-        } else if constexpr (std::is_constructible_v<std::string_view, T>) {
-            return std::string(static_cast<std::string_view>(t));
+        } else if constexpr (std::is_constructible_v<RS::string_view, T>) {
+            return std::string(static_cast<RS::string_view>(t));
         } else if constexpr (std::is_constructible_v<const char*, T>) {
             return cstr(static_cast<const char*>(t));
         } else if constexpr (std::is_base_of_v<std::exception, T>) {
@@ -1567,7 +1585,7 @@ namespace RS {
 
     template <typename T>
     struct FromStr {
-        T operator()(std::string_view s) const { using RS::from_str; return from_str<T>(s); }
+        T operator()(RS::string_view s) const { using RS::from_str; return from_str<T>(s); }
     };
 
     struct ToStr {

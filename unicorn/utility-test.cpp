@@ -16,7 +16,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -25,7 +24,7 @@
 using namespace RS;
 using namespace RS::Meta;
 using namespace std::chrono;
-using namespace std::literals;
+using namespace RS::Literals;
 
 namespace {
 
@@ -1481,7 +1480,7 @@ namespace {
     struct FromView {
         int num = 0;
         FromView() = default;
-        explicit FromView(std::string_view s) {
+        explicit FromView(RS::string_view s) {
             if (s.empty() || ! ascii_isdigit(s[0]))
                 throw std::runtime_error("Bad number");
             num = int(decnum(s));
@@ -1526,7 +1525,7 @@ namespace {
         int num = 0;
     };
 
-    bool from_str(std::string_view s, FromOverload& t) {
+    bool from_str(RS::string_view s, FromOverload& t) {
         if (s.empty() || ! ascii_isdigit(s[0]))
             return false;
         t.num = int(decnum(s));
@@ -1609,7 +1608,7 @@ namespace {
 
     struct ToView {
         int num = 0;
-        explicit operator std::string_view() const { static std::string s; s = "TV-" + std::to_string(num); return s; }
+        explicit operator RS::string_view() const { static std::string s; s = "TV-" + std::to_string(num); return s; }
     };
 
     struct ToChars {
@@ -1657,7 +1656,7 @@ void test_unicorn_utility_conversion_to_string() {
     int i = 42;
     float f = -1.25;
     std::string s = "Hello string";
-    std::string_view sv = "Hello view";
+    RS::string_view sv = "Hello view";
     const char* cp = "Hello chars";
     char ca[] = "Hello array";
     ToString ts {101};

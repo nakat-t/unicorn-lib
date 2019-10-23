@@ -8,7 +8,6 @@
 #include <memory>
 #include <ostream>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -36,7 +35,7 @@ namespace RS::Unicorn {
         using flag_type = uint32_t;
         using id_type = std::pair<uint64_t, uint64_t>;
         using string_type = std::basic_string<character_type>;
-        using string_view_type = std::basic_string_view<character_type>;
+        using string_view_type = RS::basic_string_view<character_type>;
 
         #ifdef __CYGWIN__
             using host_string_type = std::wstring;
@@ -110,7 +109,7 @@ namespace RS::Unicorn {
 
         Path() = default;
         template <typename C> Path(const std::basic_string<C>& file, flag_type flags = 0);
-        template <typename C> Path(const std::basic_string_view<C>& file, flag_type flags = 0): Path(std::basic_string<C>(file), flags) {}
+        template <typename C> Path(const RS::basic_string_view<C>& file, flag_type flags = 0): Path(std::basic_string<C>(file), flags) {}
         template <typename C> Path(const C* file, flag_type flags = 0): Path(cstr(file), flags) {}
 
         // Path name functions
@@ -192,7 +191,7 @@ namespace RS::Unicorn {
         // I/O functions
 
         void load(std::string& dst, size_t maxlen = npos, flag_type flags = 0) const;
-        void save(std::string_view src, flag_type flags = 0) const;
+        void save(RS::string_view src, flag_type flags = 0) const;
 
         // Process state functions
 
@@ -201,7 +200,7 @@ namespace RS::Unicorn {
 
     private:
 
-        using view_type = std::basic_string_view<character_type>;
+        using view_type = RS::basic_string_view<character_type>;
 
         string_type filename;
 

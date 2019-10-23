@@ -6,7 +6,7 @@
 
 using namespace RS;
 using namespace RS::Unicorn;
-using namespace std::literals;
+using namespace RS::Literals;
 
 namespace {
 

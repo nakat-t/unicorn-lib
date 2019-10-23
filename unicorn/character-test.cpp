@@ -8,7 +8,7 @@
 
 using namespace RS;
 using namespace RS::Unicorn;
-using namespace std::literals;
+using namespace RS::Literals;
 
 #define TEST_PROPERTY_STRING(type, value) TEST_EQUAL(to_str(type::value), #type "::" #value)
 

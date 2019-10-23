@@ -4,7 +4,7 @@
 
 using namespace RS::Unicorn::Literals;
 using namespace std::chrono;
-using namespace std::literals;
+using namespace RS::Literals;
 
 namespace RS::Unicorn {
 

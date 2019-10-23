@@ -46,7 +46,8 @@ cc_defines := -DNDEBUG=1
 opt_release := -O2
 opt_test := -O1
 cc_output := -o #
-include_path := -I.
+external_includes := external/martinmoene/string-view-lite/include
+include_path := -I. $(addprefix -I,$(external_includes))
 AR := ar
 ar_specific_flags := -rsu
 ar_output :=
@@ -75,7 +76,7 @@ ifeq ($(cross_target),msvc)
 	opt_release := /O2
 	opt_test := /Od
 	cc_output := /Fo
-	include_path := /I. /I$(windows_prefix)/include /I$(vcpkg_prefix)/include
+	include_path := /I. /I$(windows_prefix)/include /I$(vcpkg_prefix)/include $(addprefix /I,$(external_includes))
 	AR := lib
 	ar_specific_flags := /NOLOGO
 	ar_output := /OUT:

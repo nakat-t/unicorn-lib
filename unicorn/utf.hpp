@@ -6,7 +6,6 @@
 #include <cstring>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <utility>
 
 namespace RS::Unicorn {
@@ -231,7 +230,7 @@ namespace RS::Unicorn {
         const string_type& source() const noexcept { return *sptr; }
         string_type str() const { return sptr ? sptr->substr(ofs, units) : string_type(); }
         bool valid() const noexcept { return ok; }
-        std::basic_string_view<C> view() const noexcept;
+        RS::basic_string_view<C> view() const noexcept;
         friend bool operator==(const UtfIterator& lhs, const UtfIterator& rhs) noexcept { return lhs.ofs == rhs.ofs; }
     private:
         const string_type* sptr = nullptr;  // Source string
@@ -297,7 +296,7 @@ namespace RS::Unicorn {
     }
 
     template <typename C>
-    std::basic_string_view<C> UtfIterator<C>::view() const noexcept {
+    RS::basic_string_view<C> UtfIterator<C>::view() const noexcept {
         if (sptr)
             return {sptr->data() + ofs, units};
         else

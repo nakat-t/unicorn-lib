@@ -7,7 +7,7 @@
 
 using namespace RS;
 using namespace RS::Unicorn;
-using namespace std::literals;
+using namespace RS::Literals;
 
 void test_unicorn_string_conversion_decimal_integers() {
 

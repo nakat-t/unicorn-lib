@@ -13,7 +13,7 @@
     #define PCRE2_ENDANCHORED 0
 #endif
 
-using namespace std::literals;
+using namespace RS::Literals;
 
 namespace RS::Unicorn {
 
@@ -23,7 +23,7 @@ namespace RS::Unicorn {
         constexpr Regex::flag_type all_flags     = (Regex::runtime_sentinel_ << 1) - 1;
         constexpr Regex::flag_type runtime_mask  = all_flags - compile_mask;
 
-        auto byte_ptr(std::string_view v) noexcept { return reinterpret_cast<const unsigned char*>(v.data()); }
+        auto byte_ptr(RS::string_view v) noexcept { return reinterpret_cast<const unsigned char*>(v.data()); }
         auto byte_ptr(std::string& s) noexcept { return reinterpret_cast<unsigned char*>(&s[0]); }
 
         void handle_error(int rc) {
@@ -82,10 +82,10 @@ namespace RS::Unicorn {
 
     // Class Regex
 
-    Regex::Regex(std::string_view pattern, flag_type flags) {
+    Regex::Regex(RS::string_view pattern, flag_type flags) {
         if (flags & ~ all_flags)
             throw error(PCRE2_ERROR_BADOPTION);
-        re_pattern = pattern;
+        re_pattern = std::string{pattern};
         re_flags = flags;
         uint32_t compile_options = translate_compile_flags(flags);
         if (pattern.find("(*") != npos)
@@ -135,7 +135,7 @@ namespace RS::Unicorn {
         return captures + 1;
     }
 
-    size_t Regex::named(std::string_view name) const {
+    size_t Regex::named(RS::string_view name) const {
         if (is_null())
             return npos;
         auto code_ptr = static_cast<pcre2_code*>(pc_code.get());
@@ -144,7 +144,7 @@ namespace RS::Unicorn {
         return rc == PCRE2_ERROR_NOSUBSTRING || rc == PCRE2_ERROR_NOUNIQUESUBSTRING ? npos : size_t(rc);
     }
 
-    Regex::match Regex::search(std::string_view str, size_t pos, flag_type flags) const {
+    Regex::match Regex::search(RS::string_view str, size_t pos, flag_type flags) const {
         match m(*this, str, flags);
         m.next(pos);
         return m;
@@ -156,7 +156,7 @@ namespace RS::Unicorn {
         return search(start.source(), start.offset(), flags);
     }
 
-    Regex::match Regex::operator()(std::string_view str, size_t pos, flag_type flags) const {
+    Regex::match Regex::operator()(RS::string_view str, size_t pos, flag_type flags) const {
         return search(str, pos, flags);
     }
 
@@ -164,7 +164,7 @@ namespace RS::Unicorn {
         return search(start, flags);
     }
 
-    size_t Regex::count(std::string_view str, size_t pos, flag_type flags) const {
+    size_t Regex::count(RS::string_view str, size_t pos, flag_type flags) const {
         return grep(str, pos, flags).size();
     }
 
@@ -172,7 +172,7 @@ namespace RS::Unicorn {
         return grep(start, flags).size();
     }
 
-    Regex::match_range Regex::grep(std::string_view str, size_t pos, flag_type flags) const {
+    Regex::match_range Regex::grep(RS::string_view str, size_t pos, flag_type flags) const {
         return {{*this, str, pos, flags}, {}};
     }
 
@@ -182,7 +182,7 @@ namespace RS::Unicorn {
         return {{*this, start.source(), start.offset(), flags}, {}};
     }
 
-    Regex::partition_type Regex::partition(std::string_view str, size_t pos, flag_type flags) const {
+    Regex::partition_type Regex::partition(RS::string_view str, size_t pos, flag_type flags) const {
         match m = search(str, pos, flags);
         if (m)
             return {{str.data(), m.offset()}, m, {str.data() + m.endpos(), str.size() - m.endpos()}};
@@ -190,11 +190,11 @@ namespace RS::Unicorn {
             return {str, {str.data() + str.size(), 0}, {str.data() + str.size(), 0}};
     }
 
-    void Regex::do_replace(std::string_view src, std::string& dst, std::string_view fmt, size_t pos, flag_type flags) const {
+    void Regex::do_replace(RS::string_view src, std::string& dst, RS::string_view fmt, size_t pos, flag_type flags) const {
         static constexpr uint32_t default_options =
             PCRE2_SUBSTITUTE_EXTENDED | PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | PCRE2_SUBSTITUTE_UNKNOWN_UNSET | PCRE2_SUBSTITUTE_UNSET_EMPTY;
         if (is_null()) {
-            dst = src;
+            dst = std::string{src};
             return;
         }
         if (flags & ~ runtime_mask)
@@ -216,19 +216,19 @@ namespace RS::Unicorn {
         }
     }
 
-    std::string Regex::replace(std::string_view str, std::string_view fmt, size_t pos, flag_type flags) const {
+    std::string Regex::replace(RS::string_view str, RS::string_view fmt, size_t pos, flag_type flags) const {
         std::string dst;
         do_replace(str, dst, fmt, pos, flags);
         return dst;
     }
 
-    void Regex::replace_in(std::string& str, std::string_view fmt, size_t pos, flag_type flags) const {
+    void Regex::replace_in(std::string& str, RS::string_view fmt, size_t pos, flag_type flags) const {
         std::string dst;
         do_replace(str, dst, fmt, pos, flags);
         str = std::move(dst);
     }
 
-    Regex::split_range Regex::split(std::string_view str, size_t pos, flag_type flags) const {
+    Regex::split_range Regex::split(RS::string_view str, size_t pos, flag_type flags) const {
         return {{*this, str, pos, flags}, {}};
     }
 
@@ -247,7 +247,7 @@ namespace RS::Unicorn {
         return v;
     }
 
-    std::string Regex::escape(std::string_view str) {
+    std::string Regex::escape(RS::string_view str) {
         static const auto digit = [] (auto x) { return char(x < 10 ? '0' + x : 'a' + x - 10); };
         static const std::string table = [] {
             static const std::string meta = "$()*+.?[\\]^{|}";
@@ -339,16 +339,16 @@ namespace RS::Unicorn {
         return start == PCRE2_UNSET || stop < start ? 0 : stop - start;
     }
 
-    std::string_view Regex::match::str(size_t i) const noexcept {
+    RS::string_view Regex::match::str(size_t i) const noexcept {
         if (i >= offset_count)
             return {};
         size_t start = offset_vector[2 * i], stop = offset_vector[2 * i + 1];
         if (start == PCRE2_UNSET)
             return {};
         else if (start <= stop)
-            return std::string_view(subject_view.data() + start, stop - start);
+            return RS::string_view(subject_view.data() + start, stop - start);
         else
-            return std::string_view(subject_view.data() + start, 0);
+            return RS::string_view(subject_view.data() + start, 0);
     }
 
     size_t Regex::match::first() const noexcept {
@@ -371,7 +371,7 @@ namespace RS::Unicorn {
         return npos;
     }
 
-    std::string_view Regex::match::mark() const noexcept {
+    RS::string_view Regex::match::mark() const noexcept {
         if (! match_data)
             return {};
         auto match_ptr = static_cast<pcre2_match_data*>(match_data.get());
@@ -383,7 +383,7 @@ namespace RS::Unicorn {
         return {mark_ptr, count};
     }
 
-    Regex::match::match(const Regex& re, std::string_view str, flag_type flags) {
+    Regex::match::match(const Regex& re, RS::string_view str, flag_type flags) {
         if (flags & ~ runtime_mask)
             throw error(PCRE2_ERROR_BADOPTION);
         if (re.is_null() || ! str.data())
@@ -394,7 +394,7 @@ namespace RS::Unicorn {
         match_options = translate_match_flags(match_flags);
     }
 
-    size_t Regex::match::index_by_name(std::string_view name) const {
+    size_t Regex::match::index_by_name(RS::string_view name) const {
         return regex_ptr ? regex_ptr->named(name) : npos;
     }
 
@@ -445,22 +445,22 @@ namespace RS::Unicorn {
         return *this;
     }
 
-    Regex::split_iterator::split_iterator(const Regex& re, std::string_view str, size_t pos, flag_type flags):
+    Regex::split_iterator::split_iterator(const Regex& re, RS::string_view str, size_t pos, flag_type flags):
     after(re, str, flags), end(str.data() + str.size()), span(str) {
         after.next(pos);
         if (after)
-            span = std::string_view(str.data() + pos, after.offset() - pos);
+            span = RS::string_view(str.data() + pos, after.offset() - pos);
     }
 
     // Class Regex::transform
 
-    Regex::transform::transform(const Regex& pattern, std::string_view fmt, flag_type flags):
+    Regex::transform::transform(const Regex& pattern, RS::string_view fmt, flag_type flags):
     re(pattern), sub_format(fmt), sub_flags(flags) {}
 
-    Regex::transform::transform(std::string_view pattern, std::string_view fmt, flag_type flags):
+    Regex::transform::transform(RS::string_view pattern, RS::string_view fmt, flag_type flags):
     re(pattern, flags), sub_format(fmt), sub_flags(flags & runtime_mask) {}
 
-    std::string Regex::transform::replace(std::string_view str, size_t pos, flag_type flags) const {
+    std::string Regex::transform::replace(RS::string_view str, size_t pos, flag_type flags) const {
         return re.replace(str, sub_format, pos, flags | sub_flags);
     }
 

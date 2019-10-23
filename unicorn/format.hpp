@@ -11,7 +11,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -162,7 +161,7 @@ namespace RS::Unicorn {
     Ustring format_type(const Ustring& t, uint64_t flags, int prec);
     Ustring format_type(std::chrono::system_clock::time_point t, uint64_t flags, int prec);
     template <typename C> inline Ustring format_type(const std::basic_string<C>& t, uint64_t flags, int prec) { return format_type(to_utf8(t), flags, prec); }
-    template <typename C> inline Ustring format_type(const std::basic_string_view<C>& t, uint64_t flags, int prec)
+    template <typename C> inline Ustring format_type(const RS::basic_string_view<C>& t, uint64_t flags, int prec)
         { return format_type(to_utf8(std::basic_string<C>(t)), flags, prec); }
     template <typename C> inline Ustring format_type(C* t, uint64_t flags, int prec) { return format_type(cstr(t), flags, prec); }
     template <typename C> inline Ustring format_type(const C* t, uint64_t flags, int prec) { return format_type(cstr(t), flags, prec); }

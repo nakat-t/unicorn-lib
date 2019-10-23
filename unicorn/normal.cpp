@@ -30,7 +30,7 @@ compositions are possible.
 #include <algorithm>
 #include <string>
 
-using namespace std::literals;
+using namespace RS::Literals;
 
 namespace RS::Unicorn {
 

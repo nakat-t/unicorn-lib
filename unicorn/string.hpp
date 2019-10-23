@@ -537,7 +537,7 @@ namespace RS::Unicorn {
 
         template <typename... Args>
         Wrap::Wrap(Args... args) {
-            using namespace std::literals;
+            using namespace RS::Literals;
             enforce_ = kwget(enforce, false, args...);
             lines_ = kwget(lines, false, args...);
             preserve_ = kwget(preserve, false, args...);

@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <zlib.h>
 
-using namespace std::literals;
+using namespace RS::Literals;
 
 namespace RS::Unicorn {
 
