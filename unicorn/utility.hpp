@@ -1202,16 +1202,16 @@ namespace RS {
         return buf;
     }
 
-    template <typename T>
+    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, nullptr_t>::type = nullptr>
     Ustring opt_fp_format(T t, char mode = 'g', int prec = 6) {
-        if constexpr (std::is_floating_point<T>::value) {
-            return fp_format(t, mode, prec);
-        } else {
-            (void)mode;
-            (void)prec;
-            using RS::to_str;
-            return to_str(t);
-        }
+        return fp_format(t, mode, prec);
+    }
+    template <typename T, typename std::enable_if<!std::is_floating_point<T>::value, nullptr_t>::type = nullptr>
+    Ustring opt_fp_format(T t, char mode = 'g', int prec = 6) {
+        (void)mode;
+        (void)prec;
+        using RS::to_str;
+        return to_str(t);
     }
 
     template <typename S>
