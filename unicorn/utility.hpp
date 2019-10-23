@@ -1443,7 +1443,7 @@ namespace RS {
                     t = bool(x);
                     return true;
                 }
-            } else if constexpr (std::is_arithmetic_v<T>) {
+            } else if constexpr (std::is_arithmetic<T>::value) {
                 std::string str(view);
                 auto begin = str.data(), end = begin + str.size();
                 int base = 10;
