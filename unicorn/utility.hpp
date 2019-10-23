@@ -1448,7 +1448,7 @@ namespace RS {
                 auto begin = str.data(), end = begin + str.size();
                 int base = 10;
                 (void)base;
-                if constexpr (std::is_integral_v<T>)
+                if constexpr (std::is_integral<T>::value)
                     if (str.size() >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
                         base = 16;
                 char* stop = nullptr;
@@ -1542,7 +1542,7 @@ namespace RS {
             if (! s.empty())
                 s.pop_back();
             return s;
-        } else if constexpr (std::is_integral_v<T>) {
+        } else if constexpr (std::is_integral<T>::value) {
             return std::to_string(t);
         } else if constexpr (std::is_floating_point<T>::value) {
             return fp_format(t);

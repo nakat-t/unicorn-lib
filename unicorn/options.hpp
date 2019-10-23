@@ -204,7 +204,7 @@ namespace RS::Unicorn {
         (void)with_si;
         if (str.empty())
             return T();
-        if constexpr (std::is_integral_v<T>) {
+        if constexpr (std::is_integral<T>::value) {
             if (str_starts_with(str, "0x") || str_starts_with(str, "0X"))
                 return hex_to_int<T>(utf_iterator(str, 2));
             else if (with_si)
