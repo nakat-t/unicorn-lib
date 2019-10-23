@@ -1558,7 +1558,7 @@ namespace RS {
             return std::string(static_cast<RS::string_view>(t));
         } else if constexpr (std::is_constructible<const char*, T>::value) {
             return cstr(static_cast<const char*>(t));
-        } else if constexpr (std::is_base_of_v<std::exception, T>) {
+        } else if constexpr (std::is_base_of<std::exception, T>::value) {
             return t.what();
         } else if constexpr (IsOptional<T>::value || IsSharedPtr<T>::value || IsUniquePtr<T>::value) {
             if (t)
