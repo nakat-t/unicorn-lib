@@ -902,8 +902,10 @@ namespace RS {
 
     enum class ScopeState {
         exit,    // Invoke callback unconditionally in destructor
+#if __cplusplus >= 201703L
         fail,    // Invoke callback when scope unwinding due to exception, but not on normal exit
         success  // Invoke callback on normal exit, but not when scope unwinding due to exception
+#endif
     };
 
     template <typename F, ScopeState S>
@@ -912,12 +914,21 @@ namespace RS {
         BasicScopeGuard() = default;
         BasicScopeGuard(F&& f) try:
             callback_(std::forward<F>(f)),
+#if __cplusplus >= 201703L
             inflight_(std::uncaught_exceptions()) {}
+#else
+            inflight_(-1) {}
+#endif
             catch (...) {
+#if __cplusplus >= 201703L
                 if constexpr (S != ScopeState::success) {
                     try { f(); }
                     catch (...) {}
                 }
+#else
+                try { f(); }
+                catch (...) {}
+#endif
                 throw;
             }
         BasicScopeGuard(const BasicScopeGuard&) = delete;
@@ -929,7 +940,11 @@ namespace RS {
         BasicScopeGuard& operator=(F&& f) {
             close();
             callback_ = std::forward<F>(f);
+#if __cplusplus >= 201703L
             inflight_ = std::uncaught_exceptions();
+#else
+            inflight_ = -1;
+#endif
             return *this;
         }
         BasicScopeGuard& operator=(BasicScopeGuard&& g) noexcept {
@@ -947,10 +962,12 @@ namespace RS {
         void close() noexcept {
             if (inflight_ >= 0) {
                 bool call = true;
+#if __cplusplus >= 201703L
                 if constexpr (S == ScopeState::fail)
                     call = std::uncaught_exceptions() > inflight_;
                 else if constexpr (S == ScopeState::success)
                     call = std::uncaught_exceptions() <= inflight_;
+#endif
                 if (call)
                     try { callback_(); } catch (...) {}
                 inflight_ = -1;
@@ -959,12 +976,16 @@ namespace RS {
     };
 
     using ScopeExit = BasicScopeGuard<std::function<void()>, ScopeState::exit>;
+#if __cplusplus >= 201703L
     using ScopeFail = BasicScopeGuard<std::function<void()>, ScopeState::fail>;
     using ScopeSuccess = BasicScopeGuard<std::function<void()>, ScopeState::success>;
+#endif
 
     template <typename F> inline auto scope_exit(F&& f) { return BasicScopeGuard<F, ScopeState::exit>(std::forward<F>(f)); }
+#if __cplusplus >= 201703L
     template <typename F> inline auto scope_fail(F&& f) { return BasicScopeGuard<F, ScopeState::fail>(std::forward<F>(f)); }
     template <typename F> inline auto scope_success(F&& f) { return BasicScopeGuard<F, ScopeState::success>(std::forward<F>(f)); }
+#endif
 
     template <typename T> inline auto make_lock(T& t) { return std::unique_lock<T>(t); }
     template <typename T> inline auto make_shared_lock(T& t) { return std::shared_lock<T>(t); }

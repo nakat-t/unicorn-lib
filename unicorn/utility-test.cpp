@@ -733,6 +733,7 @@ void test_unicorn_utility_scope_guards() {
     }
     TEST_EQUAL(n, 2);
 
+#if __cplusplus >= 201703L
     n = 0;
     {
         n = 1;
@@ -770,6 +771,7 @@ void test_unicorn_utility_scope_guards() {
     }
     catch (...) {}
     TEST_EQUAL(n, 2);
+#endif
 
     n = 0;
     {
@@ -788,6 +790,7 @@ void test_unicorn_utility_scope_guards() {
     catch (...) {}
     TEST_EQUAL(n, 2);
 
+#if __cplusplus >= 201703L
     n = 0;
     {
         n = 1;
@@ -821,7 +824,7 @@ void test_unicorn_utility_scope_guards() {
     }
     catch (...) {}
     TEST_EQUAL(n, 2);
-
+#endif
 }
 
 void test_unicorn_utility_string_functions() {
