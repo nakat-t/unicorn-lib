@@ -1461,7 +1461,7 @@ namespace RS {
                         rc = T(std::strtod(begin, &stop));
                     else
                         rc = T(std::strtold(begin, &stop));
-                } else if constexpr (std::is_signed_v<T>) {
+                } else if constexpr (std::is_signed<T>::value) {
                     if constexpr (sizeof(T) <= sizeof(long))
                         rc = T(std::strtol(begin, &stop, base));
                     else
