@@ -408,7 +408,7 @@ namespace RS::Unicorn {
                     return;
                 if (popcount(flags & Utf::mask) == 0)
                     flags |= Utf::ignore;
-                if constexpr (sizeof(C1) == sizeof(C2)) {
+                if RS_CONSTEXPR17 (sizeof(C1) == sizeof(C2)) {
                     if (flags & Utf::ignore) {
                         dst.resize(dst.size() + n);
                         memcpy(&dst[0] + dst.size() - n, src, n * sizeof(C1));
@@ -439,7 +439,7 @@ namespace RS::Unicorn {
                     return;
                 if (popcount(flags & Utf::mask) == 0)
                     flags |= Utf::ignore;
-                if constexpr (sizeof(C1) == 4) {
+                if RS_CONSTEXPR17 (sizeof(C1) == 4) {
                     if (flags & Utf::ignore) {
                         dst.resize(dst.size() + n);
                         memcpy(&dst[0] + dst.size() - n, src, 4 * n);
@@ -475,7 +475,7 @@ namespace RS::Unicorn {
                     return;
                 if (popcount(flags & Utf::mask) == 0)
                     flags |= Utf::ignore;
-                if constexpr (sizeof(C2) == 4) {
+                if RS_CONSTEXPR17 (sizeof(C2) == 4) {
                     if (flags & Utf::ignore) {
                         dst.resize(dst.size() + n);
                         memcpy(&dst[0] + dst.size() - n, src, 4 * n);
