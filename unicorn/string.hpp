@@ -314,17 +314,17 @@ namespace RS::Unicorn {
         result_type operator()(const Ustring& lhs, const Ustring& rhs) const {
             using namespace UnicornDetail;
             int c = 0;
-            if constexpr (natural)
+            if RS_CONSTEXPR17 (natural)
                 c = do_compare_natural(lhs, rhs);
-            if constexpr (icase)
+            if RS_CONSTEXPR17 (icase)
                 if (c == 0)
                     c = do_compare_icase(lhs, rhs);
-            if constexpr (fallback || (! icase && ! natural))
+            if RS_CONSTEXPR17 (fallback || (! icase && ! natural))
                 if (c == 0)
                     c = do_compare_basic(lhs, rhs);
-            if constexpr (equal)
+            if RS_CONSTEXPR17 (equal)
                 return result_type(c == 0);
-            else if constexpr (less)
+            else if RS_CONSTEXPR17 (less)
                 return result_type(c == -1);
             else
                 return result_type(c);
