@@ -169,9 +169,9 @@ namespace RS::Unicorn {
     size_t code_units(char32_t c) {
         if (! char_is_unicode(c))
             return 0;
-        else if constexpr (sizeof(C) == 1)
+        else if RS_CONSTEXPR17 (sizeof(C) == 1)
             return c <= 0x7f ? 1 : c <= 0x7ff ? 2 : c <= 0xffff ? 3 : 4;
-        else if constexpr (sizeof(C) == 2)
+        else if RS_CONSTEXPR17 (sizeof(C) == 2)
             return c <= 0xffff ? 1 : 2;
         else
             return 1;
