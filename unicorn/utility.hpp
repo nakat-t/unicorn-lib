@@ -1638,21 +1638,46 @@ namespace RS {
         return t;
     }
 
-    template <typename T>
-    std::string to_str(const T& t) {
-        using namespace RS_Detail;
-        using namespace RS::Literals;
-        if constexpr (std::is_same<T, bool>::value) {
+    namespace RS_Detail {
+
+        template <typename T, typename std::enable_if<std::is_same<T, bool>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_bool(const T& t) {
+            using namespace RS::Literals;
             return t ? "true"s : "false"s;
-        } else if constexpr (std::is_same<T, char>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_same<T, bool>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_bool(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_same<T, char>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_char(const T& t) {
             return std::string(1, t);
-        } else if constexpr (std::is_same<T, std::string>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_same<T, char>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_char(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_same<T, std::string>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_string(const T& t) {
             return t;
-        } else if constexpr (std::is_same<T, RS::string_view>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_same<T, std::string>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_string(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_same<T, RS::string_view>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_string_view(const T& t) {
             return std::string(t);
-        } else if constexpr (std::is_same<T, char*>::value || std::is_same<T, const char*>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_same<T, RS::string_view>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_string_view(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_same<T, char*>::value || std::is_same<T, const char*>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_cstr(const T& t) {
             return cstr(t);
-        } else if constexpr (IsByteArray<T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_same<T, char*>::value || std::is_same<T, const char*>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_cstr(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<IsByteArray<T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_bytearray(const T& t) {
             static constexpr const char* digits = "0123456789abcdef";
             size_t n = t.size();
             std::string s;
@@ -1665,71 +1690,198 @@ namespace RS {
             if (! s.empty())
                 s.pop_back();
             return s;
-        } else if constexpr (std::is_integral<T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(IsByteArray<T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_bytearray(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_integral<T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_integral(const T& t) {
             return std::to_string(t);
-        } else if constexpr (std::is_floating_point<T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_integral<T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_integral(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_floating_point<T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_floating_point(const T& t) {
             return fp_format(t);
-        } else if constexpr (Meta::is_detected_convertible<std::string, StrMethodArchetype, T>) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_floating_point<T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_floating_point(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<Meta::IsDetectedConvertible<std::string, StrMethodArchetype, T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_str_method(const T& t) {
             return t.str();
-        } else if constexpr (Meta::is_detected_convertible<std::string, AdlToStringArchetype, T>) {
+        }
+        template <typename T, typename std::enable_if<!(Meta::IsDetectedConvertible<std::string, StrMethodArchetype, T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_str_method(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<Meta::IsDetectedConvertible<std::string, AdlToStringArchetype, T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_adl_tostring(const T& t) {
             return to_string(t);
-        } else if constexpr (Meta::is_detected_convertible<std::string, StdToStringArchetype, T>) {
+        }
+        template <typename T, typename std::enable_if<!(Meta::IsDetectedConvertible<std::string, AdlToStringArchetype, T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_adl_tostring(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<Meta::IsDetectedConvertible<std::string, StdToStringArchetype, T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_std_tostring(const T& t) {
             return std::to_string(t);
-        } else if constexpr (std::is_constructible<std::string, T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(Meta::IsDetectedConvertible<std::string, StdToStringArchetype, T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_std_tostring(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_constructible<std::string, T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_constructible_string(const T& t) {
             return static_cast<std::string>(t);
-        } else if constexpr (std::is_constructible<RS::string_view, T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_constructible<std::string, T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_constructible_string(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_constructible<RS::string_view, T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_constructible_string_view(const T& t) {
             return std::string(static_cast<RS::string_view>(t));
-        } else if constexpr (std::is_constructible<const char*, T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_constructible<RS::string_view, T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_constructible_string_view(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_constructible<const char*, T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_constructible_cstr(const T& t) {
             return cstr(static_cast<const char*>(t));
-        } else if constexpr (std::is_base_of<std::exception, T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_constructible<const char*, T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_constructible_cstr(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<std::is_base_of<std::exception, T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_exception(const T& t) {
             return t.what();
-        } else if constexpr (IsOptional<T>::value || IsSharedPtr<T>::value || IsUniquePtr<T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_base_of<std::exception, T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_exception(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<IsOptional<T>::value || IsSharedPtr<T>::value || IsUniquePtr<T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_optional_or_smartptr(const T& t) {
+            using namespace RS::Literals;
             if (t)
                 return to_str(*t);
             else
                 return "null"s;
-        } else if constexpr (IsPair<T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(IsOptional<T>::value || IsSharedPtr<T>::value || IsUniquePtr<T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_optional_or_smartptr(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<IsPair<T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_pair(const T& t) {
             std::string s = "(";
             s += to_str(t.first);
             s += ',';
             s += to_str(t.second);
             s += ')';
             return s;
-        } else if constexpr (IsTuple<T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(IsPair<T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_pair(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<IsTuple<T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_tuple(const T& t) {
             std::string s = "(";
             append_tuple<0>(t, s);
             s += ')';
             return s;
-        } else if constexpr (Meta::is_range<T>) {
-            if constexpr (IsPair<Meta::RangeValue<T>>::value) {
-                std::string s = "{";
-                for (auto& pair: t) {
-                    auto& k = pair.first;
-                    auto& v = pair.second;
-                    s += to_str(k);
-                    s += ':';
-                    s += to_str(v);
-                    s += ',';
-                }
-                if (s.size() > 1)
-                    s.pop_back();
-                s += '}';
-                return s;
-            } else {
-                std::string s = "[";
-                for (auto& x: t) {
-                    s += to_str(x);
-                    s += ',';
-                }
-                if (s.size() > 1)
-                    s.pop_back();
-                s += ']';
-                return s;
+        }
+        template <typename T, typename std::enable_if<!(IsTuple<T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_tuple(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<Meta::IsRange<T>::value && IsPair<Meta::RangeValue<T>>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_range_pair(const T& t) {
+            std::string s = "{";
+            for (auto& pair: t) {
+                auto& k = pair.first;
+                auto& v = pair.second;
+                s += to_str(k);
+                s += ':';
+                s += to_str(v);
+                s += ',';
             }
-        } else if constexpr (Meta::is_detected<OutputOperatorArchetype, T>) {
+            if (s.size() > 1)
+                s.pop_back();
+            s += '}';
+            return s;
+        }
+        template <typename T, typename std::enable_if<!(Meta::IsRange<T>::value && IsPair<Meta::RangeValue<T>>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_range_pair(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<Meta::IsRange<T>::value && !IsPair<Meta::RangeValue<T>>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_range(const T& t) {
+            std::string s = "[";
+            for (auto& x: t) {
+                s += to_str(x);
+                s += ',';
+            }
+            if (s.size() > 1)
+                s.pop_back();
+            s += ']';
+            return s;
+        }
+        template <typename T, typename std::enable_if<!(Meta::IsRange<T>::value && !IsPair<Meta::RangeValue<T>>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_range(const T&) noexcept { return ""; }
+
+        template <typename T, typename std::enable_if<Meta::IsDetected<OutputOperatorArchetype, T>::value, std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_opoutput(const T& t) {
             std::ostringstream out;
             out << t;
             return out.str();
+        }
+        template <typename T, typename std::enable_if<!(Meta::IsDetected<OutputOperatorArchetype, T>::value), std::nullptr_t>::type = nullptr>
+        inline std::string to_str_helper_opoutput(const T&) noexcept { return ""; }
+
+    }
+
+    template <typename T>
+    std::string to_str(const T& t) {
+        using namespace RS_Detail;
+        if RS_CONSTEXPR17 (std::is_same<T, bool>::value) {
+            return to_str_helper_bool<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_same<T, char>::value) {
+            return to_str_helper_char<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_same<T, std::string>::value) {
+            return to_str_helper_string<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_same<T, RS::string_view>::value) {
+            return to_str_helper_string_view<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_same<T, char*>::value || std::is_same<T, const char*>::value) {
+            return to_str_helper_cstr<T>(t);
+        } else if RS_CONSTEXPR17 (IsByteArray<T>::value) {
+            return to_str_helper_bytearray<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_integral<T>::value) {
+            return to_str_helper_integral<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_floating_point<T>::value) {
+            return to_str_helper_floating_point<T>(t);
+        } else if RS_CONSTEXPR17 (Meta::IsDetectedConvertible<std::string, StrMethodArchetype, T>::value) {
+            return to_str_helper_str_method<T>(t);
+        } else if RS_CONSTEXPR17 (Meta::IsDetectedConvertible<std::string, AdlToStringArchetype, T>::value) {
+            return to_str_helper_adl_tostring<T>(t);
+        } else if RS_CONSTEXPR17 (Meta::IsDetectedConvertible<std::string, StdToStringArchetype, T>::value) {
+            return to_str_helper_std_tostring<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_constructible<std::string, T>::value) {
+            return to_str_helper_constructible_string<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_constructible<RS::string_view, T>::value) {
+            return to_str_helper_constructible_string_view<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_constructible<const char*, T>::value) {
+            return to_str_helper_constructible_cstr<T>(t);
+        } else if RS_CONSTEXPR17 (std::is_base_of<std::exception, T>::value) {
+            return to_str_helper_exception<T>(t);
+        } else if RS_CONSTEXPR17 (IsOptional<T>::value || IsSharedPtr<T>::value || IsUniquePtr<T>::value) {
+            return to_str_helper_optional_or_smartptr<T>(t);
+        } else if RS_CONSTEXPR17 (IsPair<T>::value) {
+            return to_str_helper_pair<T>(t);
+        } else if RS_CONSTEXPR17 (IsTuple<T>::value) {
+            return to_str_helper_tuple<T>(t);
+        } else if RS_CONSTEXPR17 (Meta::IsRange<T>::value) {
+            if RS_CONSTEXPR17 (IsPair<Meta::RangeValue<T>>::value) {
+                return to_str_helper_range_pair<T>(t);
+            } else {
+                return to_str_helper_range<T>(t);
+            }
+        } else if RS_CONSTEXPR17 (Meta::IsDetected<OutputOperatorArchetype, T>::value) {
+            return to_str_helper_opoutput<T>(t);
         } else {
             return type_name(t);
         }
