@@ -216,7 +216,7 @@ namespace RS::Unicorn {
                 return static_cast<T>(si_to_float(str));
             else
                 return from_str<T>(str);
-        } else if constexpr (std::is_enum_v<T>) {
+        } else if constexpr (std::is_enum<T>::value) {
             T t = T();
             str_to_enum(str, t);
             return t;
