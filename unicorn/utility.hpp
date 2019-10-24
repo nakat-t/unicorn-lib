@@ -235,6 +235,37 @@
 
 namespace RS {
 
+    // C++11/14 backward compatibility
+
+    using nonstd::string_view;
+    using nonstd::wstring_view;
+    using nonstd::u16string_view;
+    using nonstd::u32string_view;
+    using nonstd::basic_string_view;
+
+#if !nssv_USES_STD_STRING_VIEW
+    inline std::string& operator+=(std::string& s, const nonstd::string_view& view) {
+        s.append(view.data(), view.size());
+        return s;
+    }
+#endif
+
+    using nonstd::optional;
+
+#if __cplusplus >= 201703L
+    using std::clamp;
+#else
+    template<typename T>
+    constexpr const T& clamp( const T& v, const T& lo, const T& hi ) {
+        return (v < lo) ? lo : (hi < v) ? hi : v;
+    }
+
+    template<class T, class Compare>
+    constexpr const T& clamp( const T& v, const T& lo, const T& hi, Compare comp ) {
+        return comp(v, lo) ? lo : comp(hi, v) ? hi : v;
+    }
+#endif
+
     // Basic types
 
     #ifdef _XOPEN_SOURCE
@@ -252,19 +283,11 @@ namespace RS {
         using WcharEquivalent = char32_t;
     #endif
 
-    using nonstd::string_view;
-    using nonstd::wstring_view;
-    using nonstd::u16string_view;
-    using nonstd::u32string_view;
-    using nonstd::basic_string_view;
-
     using Ustring = std::string;
     using Uview = string_view;
     using Strings = std::vector<std::string>;
     using NativeString = std::basic_string<NativeCharacter>;
     using WstringEquivalent = std::basic_string<WcharEquivalent>;
-
-    using nonstd::optional;
 
 #if __cplusplus >= 201703L
     template <auto> class IncompleteTemplate;
@@ -720,13 +743,6 @@ namespace RS {
     template <typename T> Ustring bin(T x, size_t digits = 8 * sizeof(T)) { return RS_Detail::int_to_string(x, 2, digits); }
     template <typename T> Ustring dec(T x, size_t digits = 1) { return RS_Detail::int_to_string(x, 10, digits); }
     template <typename T> Ustring hex(T x, size_t digits = 2 * sizeof(T)) { return RS_Detail::int_to_string(x, 16, digits); }
-
-#if defined(nssv_USES_STD_STRING_VIEW) && !nssv_USES_STD_STRING_VIEW
-    inline std::string& operator+=(std::string& s, const nonstd::string_view& view) {
-        s.append(view.data(), view.size());
-        return s;
-    }
-#endif
 
     // Date and time functions
 
