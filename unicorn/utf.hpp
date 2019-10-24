@@ -179,7 +179,7 @@ namespace RS::Unicorn {
 
     template <typename C>
     bool is_single_unit(C c) {
-        if constexpr (sizeof(C) == 1)
+        if RS_CONSTEXPR17 (sizeof(C) == 1)
             return uint8_t(c) <= 0x7f;
         else
             return char_is_unicode(c);
