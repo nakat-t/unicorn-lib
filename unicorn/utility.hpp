@@ -198,6 +198,17 @@
         }
 #endif
 
+#if __cplusplus >= 201703L
+#define RS_CONSTEXPR17 constexpr
+#define RS_CONSTEXPR14 constexpr
+#elif __cplusplus >= 201402L
+#define RS_CONSTEXPR17
+#define RS_CONSTEXPR14 constexpr
+#else
+#define RS_CONSTEXPR17
+#define RS_CONSTEXPR14
+#endif
+
 // Link control
 
 #define RS_LDLIB(libs)
@@ -1431,6 +1442,133 @@ namespace RS {
 
     }
 
+    namespace RS_Detail {
+
+        template <typename T, typename std::enable_if<std::is_same<T, bool>::value, std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_bool(RS::string_view view, T& t) {
+            if (view == "true") {
+                t = true;
+                return true;
+            } else if (view == "false") {
+                t = false;
+                return true;
+            } else {
+                intmax_t x = 0;
+                if (! from_str(view, x))
+                    return false;
+                t = bool(x);
+                return true;
+            }
+        }
+        template <typename T, typename std::enable_if<!std::is_same<T, bool>::value, std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_bool(RS::string_view, T&) noexcept { return false; }
+
+        template <typename T, typename std::enable_if<std::is_integral<T>::value, std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_integral(std::string& str, int& base) {
+            if (str.size() >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+                base = 16;
+        }
+        template <typename T, typename std::enable_if<!std::is_integral<T>::value, std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_integral(std::string&, int&) noexcept {}
+
+        template <typename T, typename std::enable_if<std::is_floating_point<T>::value && sizeof(T) <= sizeof(float), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_float(const char* begin, char** stop, T& rc) {
+            rc = T(std::strtof(begin, stop));
+        }
+        template <typename T, typename std::enable_if<!(std::is_floating_point<T>::value && sizeof(T) <= sizeof(float)), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_float(const char*, char**, T&) noexcept {}
+
+        template <typename T, typename std::enable_if<std::is_floating_point<T>::value && sizeof(T) <= sizeof(double), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_double(const char* begin, char** stop, T& rc) {
+            rc = T(std::strtod(begin, stop));
+        }
+        template <typename T, typename std::enable_if<!(std::is_floating_point<T>::value && sizeof(T) <= sizeof(double)), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_double(const char*, char**, T&) noexcept {}
+
+        template <typename T, typename std::enable_if<std::is_floating_point<T>::value && sizeof(double) < sizeof(T), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_long_double(const char* begin, char** stop, T& rc) {
+            rc = T(std::strtold(begin, stop));
+        }
+        template <typename T, typename std::enable_if<!(std::is_floating_point<T>::value && sizeof(double) < sizeof(T)), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_long_double(const char*, char**, T&) noexcept {}
+
+        template <typename T, typename std::enable_if<std::is_signed<T>::value && sizeof(T) <= sizeof(long), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_long(const char* begin, char** stop, int base, T& rc) {
+            rc = T(std::strtol(begin, stop, base));
+        }
+        template <typename T, typename std::enable_if<!(std::is_signed<T>::value && sizeof(T) <= sizeof(long)), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_long(const char*, char**, int, T&) noexcept {}
+
+        template <typename T, typename std::enable_if<std::is_signed<T>::value && sizeof(long) < sizeof(T), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_long_long(const char* begin, char** stop, int base, T& rc) {
+            rc = T(std::strtoll(begin, stop, base));
+        }
+        template <typename T, typename std::enable_if<!(std::is_signed<T>::value && sizeof(long) < sizeof(T)), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_long_long(const char*, char**, int, T&) noexcept {}
+
+        template <typename T, typename std::enable_if<!std::is_signed<T>::value && sizeof(T) <= sizeof(long), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_ulong(const char* begin, char** stop, int base, T& rc) {
+            rc = T(std::strtoul(begin, stop, base));
+        }
+        template <typename T, typename std::enable_if<!(!std::is_signed<T>::value && sizeof(T) <= sizeof(long)), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_ulong(const char*, char**, int, T&) noexcept {}
+
+        template <typename T, typename std::enable_if<!std::is_signed<T>::value && sizeof(long) < sizeof(T), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_ulong_long(const char* begin, char** stop, int base, T& rc) {
+            rc = T(std::strtoull(begin, stop, base));
+        }
+        template <typename T, typename std::enable_if<!(!std::is_signed<T>::value && sizeof(long) < sizeof(T)), std::nullptr_t>::type = nullptr>
+        inline void from_str_helper_ulong_long(const char*, char**, int, T&) noexcept {}
+
+        template <typename T, typename std::enable_if<Meta::IsDetected<StrToEnumArchetype, T>::value, std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_str_to_enum(RS::string_view view, T& t) {
+            return str_to_enum(view, t);
+        }
+        template <typename T, typename std::enable_if<!(Meta::IsDetected<StrToEnumArchetype, T>::value), std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_str_to_enum(RS::string_view, T&) noexcept { return false; }
+
+        template <typename T, typename std::enable_if<std::is_constructible<T, RS::string_view>::value, std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_string_view(RS::string_view view, T& t) {
+            t = static_cast<T>(view);
+            return true;
+        }
+        template <typename T, typename std::enable_if<!(std::is_constructible<T, RS::string_view>::value), std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_string_view(RS::string_view, T&) noexcept { return false; }
+
+        template <typename T, typename std::enable_if<std::is_constructible<T, std::string>::value, std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_string(RS::string_view view, T& t) {
+            std::string str(view);
+            t = static_cast<T>(str);
+            return true;
+        }
+        template <typename T, typename std::enable_if<!(std::is_constructible<T, std::string>::value), std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_string(RS::string_view, T&) noexcept { return false; }
+
+        template <typename T, typename std::enable_if<std::is_constructible<T, const char*>::value, std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_cstr(RS::string_view view, T& t) {
+            std::string str(view);
+            t = static_cast<T>(str.data());
+            return true;
+        }
+        template <typename T, typename std::enable_if<!(std::is_constructible<T, const char*>::value), std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_cstr(RS::string_view, T&) noexcept { return false; }
+
+        template <typename T, typename std::enable_if<Meta::IsDetected<InputOperatorArchetype, T>::value, std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_opinput(RS::string_view view, T& t) {
+            std::string str(view);
+            std::istringstream in(str);
+            T temp;
+            in >> temp;
+            if (! in)
+                return false;
+            t = std::move(temp);
+            return true;
+        }
+        template <typename T, typename std::enable_if<!(Meta::IsDetected<InputOperatorArchetype, T>::value), std::nullptr_t>::type = nullptr>
+        inline bool from_str_helper_opinput(RS::string_view, T&) noexcept { return false; }
+
+    }
+
     template <typename T>
     bool from_str(RS::string_view view, T& t) noexcept {
         using namespace RS_Detail;
@@ -1439,75 +1577,50 @@ namespace RS {
                 t = T();
                 return true;
             }
-            if constexpr (std::is_same<T, bool>::value) {
-                if (view == "true") {
-                    t = true;
-                    return true;
-                } else if (view == "false") {
-                    t = false;
-                    return true;
-                } else {
-                    intmax_t x = 0;
-                    if (! from_str(view, x))
-                        return false;
-                    t = bool(x);
-                    return true;
-                }
-            } else if constexpr (std::is_arithmetic<T>::value) {
+            if RS_CONSTEXPR17 (std::is_same<T, bool>::value) {
+                return from_str_helper_bool<T>(view, t);
+            } else if RS_CONSTEXPR17 (std::is_arithmetic<T>::value) {
                 std::string str(view);
                 auto begin = str.data(), end = begin + str.size();
                 int base = 10;
                 (void)base;
-                if constexpr (std::is_integral<T>::value)
-                    if (str.size() >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
-                        base = 16;
+                if RS_CONSTEXPR17 (std::is_integral<T>::value)
+                    from_str_helper_integral<T>(str, base);
                 char* stop = nullptr;
                 T rc = T();
                 errno = 0;
-                if constexpr (std::is_floating_point<T>::value) {
-                    if constexpr (sizeof(T) <= sizeof(float))
-                        rc = T(std::strtof(begin, &stop));
-                    else if constexpr (sizeof(T) <= sizeof(double))
-                        rc = T(std::strtod(begin, &stop));
+                if RS_CONSTEXPR17 (std::is_floating_point<T>::value) {
+                    if RS_CONSTEXPR17 (sizeof(T) <= sizeof(float))
+                        from_str_helper_float<T>(begin, &stop, rc);
+                    else if RS_CONSTEXPR17 (sizeof(T) <= sizeof(double))
+                        from_str_helper_double<T>(begin, &stop, rc);
                     else
-                        rc = T(std::strtold(begin, &stop));
-                } else if constexpr (std::is_signed<T>::value) {
-                    if constexpr (sizeof(T) <= sizeof(long))
-                        rc = T(std::strtol(begin, &stop, base));
+                        from_str_helper_long_double<T>(begin, &stop, rc);
+                } else if RS_CONSTEXPR17 (std::is_signed<T>::value) {
+                    if RS_CONSTEXPR17 (sizeof(T) <= sizeof(long))
+                        from_str_helper_long<T>(begin, &stop, base, rc);
                     else
-                        rc = T(std::strtoll(begin, &stop, base));
+                        from_str_helper_long_long<T>(begin, &stop, base, rc);
                 } else {
-                    if constexpr (sizeof(T) <= sizeof(long))
-                        rc = T(std::strtoul(begin, &stop, base));
+                    if RS_CONSTEXPR17 (sizeof(T) <= sizeof(long))
+                        from_str_helper_ulong<T>(begin, &stop, base, rc);
                     else
-                        rc = T(std::strtoull(begin, &stop, base));
+                        from_str_helper_ulong_long<T>(begin, &stop, base, rc);
                 }
                 if (errno != 0 || stop != end)
                     return false;
                 t = rc;
                 return true;
-            } else if constexpr (Meta::is_detected<StrToEnumArchetype, T>) {
-                return str_to_enum(view, t);
-            } else if constexpr (std::is_constructible<T, RS::string_view>::value) {
-                t = static_cast<T>(view);
-                return true;
-            } else if constexpr (std::is_constructible<T, std::string>::value) {
-                std::string str(view);
-                t = static_cast<T>(str);
-                return true;
-            } else if constexpr (std::is_constructible<T, const char*>::value) {
-                std::string str(view);
-                t = static_cast<T>(str.data());
-                return true;
-            } else if constexpr (Meta::is_detected<InputOperatorArchetype, T>) {
-                std::string str(view);
-                std::istringstream in(str);
-                T temp;
-                in >> temp;
-                if (! in)
-                    return false;
-                t = std::move(temp);
-                return true;
+            } else if RS_CONSTEXPR17 (Meta::IsDetected<StrToEnumArchetype, T>::value) {
+                return from_str_helper_str_to_enum<T>(view, t);
+            } else if RS_CONSTEXPR17 (std::is_constructible<T, RS::string_view>::value) {
+                return from_str_helper_string_view<T>(view, t);
+            } else if RS_CONSTEXPR17 (std::is_constructible<T, std::string>::value) {
+                return from_str_helper_string<T>(view, t);
+            } else if RS_CONSTEXPR17 (std::is_constructible<T, const char*>::value) {
+                return from_str_helper_cstr<T>(view, t);
+            } else if RS_CONSTEXPR17 (Meta::IsDetected<InputOperatorArchetype, T>::value) {
+                return from_str_helper_opinput<T>(view, t);
             } else {
                 return false;
             }
