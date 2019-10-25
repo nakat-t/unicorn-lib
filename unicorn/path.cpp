@@ -156,7 +156,7 @@ namespace RS::Unicorn {
             #ifdef _XOPEN_SOURCE
                 std::string buf(256, '\0');
                 for (;;) {
-                    auto rc = getcwd(buf.data(), buf.size());
+                    auto rc = getcwd(&(buf[0]), buf.size());
                     int err = errno;
                     if (rc)
                         return rc;
