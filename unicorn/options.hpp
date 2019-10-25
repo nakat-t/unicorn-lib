@@ -199,27 +199,53 @@ namespace RS::Unicorn {
             return parse(args, out, flags);
     }
 
-    template <typename T>
-    T Options::get_converted(const Ustring& str, bool with_si) {
-        (void)with_si;
-        if (str.empty())
-            return T();
-        if constexpr (std::is_integral<T>::value) {
+    namespace OptionsDetail {
+
+        template <typename T, typename std::enable_if<std::is_integral<T>::value, std::nullptr_t>::type = nullptr>
+        inline T get_converted_helper_integral(const Ustring& str, bool with_si) {
             if (str_starts_with(str, "0x") || str_starts_with(str, "0X"))
                 return hex_to_int<T>(utf_iterator(str, 2));
             else if (with_si)
                 return static_cast<T>(si_to_int(str));
             else
                 return from_str<T>(str);
-        } else if constexpr (std::is_floating_point<T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_integral<T>::value), std::nullptr_t>::type = nullptr>
+        inline T get_converted_helper_integral(const Ustring&, bool) noexcept { return T(); }
+
+        template <typename T, typename std::enable_if<std::is_floating_point<T>::value, std::nullptr_t>::type = nullptr>
+        inline T get_converted_helper_floating_point(const Ustring& str, bool with_si) {
             if (with_si)
                 return static_cast<T>(si_to_float(str));
             else
                 return from_str<T>(str);
-        } else if constexpr (std::is_enum<T>::value) {
+        }
+        template <typename T, typename std::enable_if<!(std::is_floating_point<T>::value), std::nullptr_t>::type = nullptr>
+        inline T get_converted_helper_floating_point(const Ustring&, bool) noexcept { return T(); }
+
+        template <typename T, typename std::enable_if<std::is_enum<T>::value, std::nullptr_t>::type = nullptr>
+        inline T get_converted_helper_enum(const Ustring& str, bool) {
             T t = T();
             str_to_enum(str, t);
             return t;
+        }
+        template <typename T, typename std::enable_if<!(std::is_enum<T>::value), std::nullptr_t>::type = nullptr>
+        inline T get_converted_helper_enum(const Ustring&, bool) noexcept { return T(); }
+
+    }
+
+    template <typename T>
+    T Options::get_converted(const Ustring& str, bool with_si) {
+        using namespace OptionsDetail;
+        (void)with_si;
+        if (str.empty())
+            return T();
+        if RS_CONSTEXPR17 (std::is_integral<T>::value) {
+            return get_converted_helper_integral<T>(str, with_si);
+        } else if RS_CONSTEXPR17 (std::is_floating_point<T>::value) {
+            return get_converted_helper_floating_point<T>(str, with_si);
+        } else if RS_CONSTEXPR17 (std::is_enum<T>::value) {
+            return get_converted_helper_enum<T>(str, with_si);
         } else {
             return from_str<T>(str);
         }
