@@ -1529,11 +1529,11 @@ namespace RS {
         template <typename T, typename std::enable_if<!(!std::is_signed<T>::value && sizeof(T) <= sizeof(long)), std::nullptr_t>::type = nullptr>
         inline void from_str_helper_ulong(const char*, char**, int, T&) noexcept {}
 
-        template <typename T, typename std::enable_if<!std::is_signed<T>::value && sizeof(long) < sizeof(T), std::nullptr_t>::type = nullptr>
+        template <typename T, typename std::enable_if<std::is_unsigned<T>::value && sizeof(long) < sizeof(T), std::nullptr_t>::type = nullptr>
         inline void from_str_helper_ulong_long(const char* begin, char** stop, int base, T& rc) {
             rc = T(std::strtoull(begin, stop, base));
         }
-        template <typename T, typename std::enable_if<!(!std::is_signed<T>::value && sizeof(long) < sizeof(T)), std::nullptr_t>::type = nullptr>
+        template <typename T, typename std::enable_if<!(std::is_unsigned<T>::value && sizeof(long) < sizeof(T)), std::nullptr_t>::type = nullptr>
         inline void from_str_helper_ulong_long(const char*, char**, int, T&) noexcept {}
 
         template <typename T, typename std::enable_if<Meta::IsDetected<StrToEnumArchetype, T>::value, std::nullptr_t>::type = nullptr>
