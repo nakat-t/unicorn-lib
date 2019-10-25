@@ -987,18 +987,20 @@ namespace RS {
         F callback_;
         int inflight_ = -1;
         void close() noexcept {
+#if __cplusplus >= 201703L
             if (inflight_ >= 0) {
                 bool call = true;
-#if __cplusplus >= 201703L
                 if constexpr (S == ScopeState::fail)
                     call = std::uncaught_exceptions() > inflight_;
                 else if constexpr (S == ScopeState::success)
                     call = std::uncaught_exceptions() <= inflight_;
-#endif
                 if (call)
                     try { callback_(); } catch (...) {}
                 inflight_ = -1;
             }
+#else
+            try { callback_(); } catch (...) {}
+#endif
         }
     };
 
