@@ -68,9 +68,9 @@ namespace RS::Unicorn {
                 int rc = 0;
                 for (;;) {
                     if (user.empty())
-                        rc = getpwuid_r(geteuid(), &pwdbuf, workbuf.data(), workbuf.size(), &pwdptr);
+                        rc = getpwuid_r(geteuid(), &pwdbuf, &(workbuf[0]), workbuf.size(), &pwdptr);
                     else
-                        rc = getpwnam_r(user.data(), &pwdbuf, workbuf.data(), workbuf.size(), &pwdptr);
+                        rc = getpwnam_r(user.data(), &pwdbuf, &(workbuf[0]), workbuf.size(), &pwdptr);
                     if (rc != ERANGE)
                         break;
                     workbuf.resize(2 * workbuf.size());
