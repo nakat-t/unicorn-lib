@@ -82,6 +82,34 @@ namespace RS::Unicorn {
 
     // Class Regex
 
+    // In C++17 or later, There is no need to redeclared static constexpr data members.
+#if __cplusplus < 201703L
+    constexpr Regex::flag_type Regex::ascii;
+    constexpr Regex::flag_type Regex::byte;
+    constexpr Regex::flag_type Regex::crlf;
+    constexpr Regex::flag_type Regex::dollar_end;
+    constexpr Regex::flag_type Regex::dot_all;
+    constexpr Regex::flag_type Regex::extended;
+    constexpr Regex::flag_type Regex::first_line;
+    constexpr Regex::flag_type Regex::icase;
+    constexpr Regex::flag_type Regex::line;
+    constexpr Regex::flag_type Regex::multiline;
+    constexpr Regex::flag_type Regex::no_capture;
+    constexpr Regex::flag_type Regex::optimize;
+    constexpr Regex::flag_type Regex::word;
+    constexpr Regex::flag_type Regex::compile_sentinel_;
+    constexpr Regex::flag_type Regex::anchor;
+    constexpr Regex::flag_type Regex::full;
+    constexpr Regex::flag_type Regex::global;
+    constexpr Regex::flag_type Regex::no_utf_check;
+    constexpr Regex::flag_type Regex::not_empty;
+    constexpr Regex::flag_type Regex::not_empty_start;
+    constexpr Regex::flag_type Regex::not_line;
+    constexpr Regex::flag_type Regex::partial_hard;
+    constexpr Regex::flag_type Regex::partial_soft;
+    constexpr Regex::flag_type Regex::runtime_sentinel_;
+#endif
+
     Regex::Regex(RS::string_view pattern, flag_type flags) {
         if (flags & ~ all_flags)
             throw error(PCRE2_ERROR_BADOPTION);

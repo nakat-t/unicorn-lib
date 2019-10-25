@@ -55,6 +55,31 @@ namespace RS::Unicorn {
 
     }
 
+    // In C++17 or later, There is no need to redeclared static constexpr data members.
+#if __cplusplus < 201703L
+    constexpr uint32_t Options::colour;
+    constexpr uint32_t Options::nocolour;
+    constexpr uint32_t Options::locale;
+    constexpr uint32_t Options::noprefix;
+    constexpr uint32_t Options::quoted;
+    constexpr Kwarg<bool, 1> Options::anon;
+    constexpr Kwarg<bool, 2> Options::boolean;
+    constexpr Kwarg<bool, 3> Options::file;
+    constexpr Kwarg<bool, 4> Options::floating;
+    constexpr Kwarg<bool, 5> Options::integer;
+    constexpr Kwarg<bool, 6> Options::multi;
+    constexpr Kwarg<bool, 7> Options::required;
+    constexpr Kwarg<bool, 8> Options::si;
+    constexpr Kwarg<bool, 9> Options::uinteger;
+    constexpr Kwarg<Ustring, 1> Options::abbrev;
+    constexpr Kwarg<Ustring, 2> Options::defvalue;
+    constexpr Kwarg<Ustring, 3> Options::group;
+    constexpr Kwarg<Ustring, 4> Options::implies;
+    constexpr Kwarg<Ustring, 5> Options::pattern;
+    constexpr Kwarg<Ustring, 6> Options::prereq;
+    constexpr Kwarg<Options::enum_wrapper> Options::enumtype;
+#endif
+
     Options& Options::add(const Ustring& info) {
         if (checked)
             throw spec_error("Option list is already complete");

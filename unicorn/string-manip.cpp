@@ -763,6 +763,19 @@ namespace RS::Unicorn {
         str_unify_lines_in(str, "\n");
     }
 
+    // In C++17 or later, There is no need to redeclared static constexpr data members.
+#if __cplusplus < 201703L
+    constexpr Kwarg<bool, 1> Wrap::enforce;
+    constexpr Kwarg<bool, 2> Wrap::lines;
+    constexpr Kwarg<bool, 3> Wrap::preserve;
+    constexpr Kwarg<uint32_t> Wrap::flags;
+    constexpr Kwarg<size_t, 1> Wrap::margin;
+    constexpr Kwarg<size_t, 2> Wrap::margin2;
+    constexpr Kwarg<size_t, 3> Wrap::width;
+    constexpr Kwarg<Ustring, 1> Wrap::newline;
+    constexpr Kwarg<Ustring, 2> Wrap::newpara;
+#endif
+
     void Wrap::init() {
         if (width_ == npos) {
             auto columns = decnum(cstr(getenv("COLUMNS")));
